@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Productos - Tienda Virtual{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Nuestros Productos</h1>
+    </div>
+</div>
+
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card product-card h-100">
+            <img src="{{ product.image_url or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ product.name }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text text-muted">{{ product.description or 'Sin descripción' }}</p>
+                <p class="price">${{ product.price }}</p>
+                <p class="stock {% if product.stock > 0 %}text-success{% else %}text-danger{% endif %}">
+                    {% if product.stock > 0 %}En stock ({{ product.stock }}){% else %}Sin stock{% endif %}
+                </p>
+                {% if product.stock > 0 and session.get('user_id') %}
+                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" class="d-flex gap-2">
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" style="width: 70px;">
+                    <button type="submit" class="btn btn-primary flex-grow-1">Agregar</button>
+                </form>
+                {% elif not session.get('user_id') %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">Inicia sesión para comprar</a>
+                {% elif product.stock == 0 %}
+                <button class="btn btn-secondary w-100" disabled>Agotado</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">No hay productos disponibles en este momento.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
