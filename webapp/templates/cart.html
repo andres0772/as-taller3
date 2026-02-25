@@ -9,10 +9,10 @@
     </div>
 </div>
 
-{% if cart and cart.items %}
+{% if cart and cart.get('items') %}
 <div class="row">
     <div class="col-lg-8">
-        {% for item in cart.items %}
+        {% for item in cart.get('items', []) %}
         <div class="card mb-3 cart-item">
             <div class="card-body">
                 <div class="row align-items-center">
@@ -52,7 +52,7 @@
             </div>
             <div class="card-body">
                 {% set total = namespace(value=0) %}
-                {% for item in cart.items %}
+                {% for item in cart.get('items', []) %}
                     {% set total.value = total.value + (item.product.price * item.quantity) %}
                 {% endfor %}
                 
