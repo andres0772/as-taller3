@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
 from decimal import Decimal
-from api.database import get_db
-from api.models.product import Product
+from database import get_db
+from models.product import Product
 
 router = APIRouter()
 
@@ -46,13 +46,12 @@ async def get_products(db: Session = Depends(get_db)):
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product(product_id: int, db: Session = Depends(get_db)):
     product = db.query(Product).filter(Product.id == product_id).first()
-    
+
     if not product:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Producto no encontrado"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado"
         )
-    
+
     return product
 
 
@@ -63,48 +62,48 @@ async def create_product(product_data: ProductCreate, db: Session = Depends(get_
         description=product_data.description,
         price=product_data.price,
         stock=product_data.stock,
-        image_url=product_data.image_url
+        image_url=product_data.image_url,
     )
-    
+
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
-    
+
     return new_product
 
 
 @router.put("/{product_id}", response_model=ProductResponse)
-async def update_product(product_id: int, product_data: ProductUpdate, db: Session = Depends(get_db)):
+async def update_product(
+    product_id: int, product_data: ProductUpdate, db: Session = Depends(get_db)
+):
     product = db.query(Product).filter(Product.id == product_id).first()
-    
+
     if not product:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Producto no encontrado"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado"
         )
-    
+
     # Actualizar solo los campos proporcionados
     update_data = product_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(product, field, value)
-    
+
     db.commit()
     db.refresh(product)
-    
+
     return product
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product(product_id: int, db: Session = Depends(get_db)):
     product = db.query(Product).filter(Product.id == product_id).first()
-    
+
     if not product:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Producto no encontrado"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado"
         )
-    
+
     db.delete(product)
     db.commit()
-    
+
     return None
